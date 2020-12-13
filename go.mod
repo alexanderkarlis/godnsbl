@@ -1,5 +1,5 @@
-module github.com/mrichman/godnsbl
+module github.com/alexanderkarlis/godnsbl
 
 go 1.12
 
-replace github.com/mrichman/godnsbl => github.com/alexanderkarlis/godnsbl v1.0.0
+require github.com/mrichman/godnsbl v1.0.0

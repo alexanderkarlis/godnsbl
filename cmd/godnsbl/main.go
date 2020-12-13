@@ -6,7 +6,7 @@ import (
 
 	"sync"
 
-	"github.com/mrichman/godnsbl"
+	"github.com/alexanderkarlis/godnsbl"
 )
 
 func main() {
