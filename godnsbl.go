@@ -9,8 +9,8 @@ package godnsbl
 import (
 	"fmt"
 	"net"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 /*
@@ -126,6 +126,8 @@ type Result struct {
 	Error bool `json:"error"`
 	// ErrorType is the type of error encountered if any
 	ErrorType error `json:"error_type"`
+	// Code is the actual code to be returned by the DNS
+	Code string `json:"code"`
 }
 
 /*
@@ -149,14 +151,15 @@ func Reverse(ip net.IP) string {
 func query(rbl string, host string, r *Result) {
 	r.Listed = false
 	r.Rbl = rbl
+	r.Code = ""
 
 	lookup := fmt.Sprintf("%s.%s", host, rbl)
 
 	res, err := net.LookupHost(lookup)
 	if len(res) > 0 {
-
-		for _, ip := range res{
-			m, _ := regexp.MatchString("^127.0.0.*", ip) 
+		r.Code = res[0]
+		for _, ip := range res {
+			m, _ := regexp.MatchString("^127.0.0.*", ip)
 
 			if m == true {
 				r.Listed = true

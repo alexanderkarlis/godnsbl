@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/json"
-
 	"fmt"
-	"log"
-	"os"
+
 	"sync"
 
 	"github.com/mrichman/godnsbl"
@@ -13,32 +11,28 @@ import (
 
 func main() {
 
-	if len(os.Args) != 2 {
-		fmt.Println("Please supply a domain name or IP address.")
-		os.Exit(1)
-	}
-
-	ip := os.Args[1]
-
 	wg := &sync.WaitGroup{}
-	results := make([]godnsbl.Result, len(godnsbl.Blacklists))
-	for i, source := range godnsbl.Blacklists {
+	results := []godnsbl.Result{}
+	for i := 1; i <= 255; i++ {
 		wg.Add(1)
-		go func(i int, source string) {
+		go func(i int) {
 			defer wg.Done()
-			rbl := godnsbl.Lookup(source, ip)
+			rbl := godnsbl.Lookup("zen.spamhaus.org", fmt.Sprintf("127.0.0.%d", i))
 			if len(rbl.Results) == 0 {
-				results[i] = godnsbl.Result{}
+				results = append(results, godnsbl.Result{})
 			} else {
-				results[i] = rbl.Results[0]
+				if rbl.Results[0].Code != "" {
+					results = append(results, rbl.Results[0])
+				}
 			}
-		}(i, source)
+		}(i)
 	}
 
 	wg.Wait()
 
-	enc := json.NewEncoder(os.Stdout)
-	if err := enc.Encode(&results); err != nil {
-		log.Println(err)
+	pp, err := json.MarshalIndent(&results, "", "    ")
+	if err != nil {
+		panic(err)
 	}
+	fmt.Println(string(pp))
 }
